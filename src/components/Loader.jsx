@@ -2,7 +2,7 @@ import { MutatingDots } from "react-loader-spinner";
 
 export const Loader = ({ visible }) => {
     return (
-        <div className="position-absolute">
+        <div className="loader">
             <MutatingDots
                 color="#007bff" 
                 visible={visible}
