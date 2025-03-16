@@ -1,0 +1,5 @@
+services:
+  - type: web
+    name: invelecar
+    env: static
+    staticPublishPath: .
