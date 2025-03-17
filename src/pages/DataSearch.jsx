@@ -130,12 +130,14 @@ export const DataSearch = () => {
     // Get all the indicadores from the data and set the indicadores state
     const getIndicadores = () => {
         const indicadores = [];
+        const seenIds = new Set();
         data.forEach(item => {
-            if (!indicadores.includes(item.id_indicador)) {
-                indicadores.push(item.id_indicador);
+            if (!seenIds.has(item.id_indicador)) {
+                seenIds.add(item.id_indicador);
+                indicadores.push({ id: item.id_indicador, descripcion: item.descripcion_indicador });
             }
         });
-        indicadores.sort((a, b) => a - b);
+        indicadores.sort((a, b) => a.id - b.id);
         setIndicadores(indicadores);
     };
 
@@ -173,6 +175,7 @@ export const DataSearch = () => {
         setEndYear(range[1] ? range[1].getFullYear() : "");
         console.log(range);
     };
+    console.log(indicadores)
 
     return (
         <div className="vh-100 align-items-center">
@@ -240,13 +243,13 @@ export const DataSearch = () => {
                 </div>
                 <div className="col-md-4">
                     <label className="form-label">
-                        <strong className="mb-2">Id indicador</strong>
+                        <strong className="mb-2">indicador</strong>
                     </label>
                     <select className="form-select" onChange={(e) => setIdIndicador(e.target.value)}>
                         <option value="">Seleccionar indicador</option>
-                        {indicadores.map((indicador) => (
-                            <option key={indicador} value={indicador}>
-                                {indicador}
+                        {indicadores.map((indicador, index) => (
+                            <option key={index} value={indicador.id}>
+                                {indicador.descripcion}
                             </option>
                         ))}
                     </select>
@@ -312,7 +315,6 @@ export const DataSearch = () => {
                     </nav>
                 </div>
             )}
-
         </div>
     );
 }
