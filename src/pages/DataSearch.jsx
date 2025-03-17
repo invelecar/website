@@ -9,15 +9,9 @@ export const DataSearch = () => {
         fetchData();
     }, []);
 
-
-    // API URL
-    const apiUrl = "https://invelecar-backend.onrender.com/data";
-
-    // State to store the data from the API
-    const [data, setData] = useState([]);
-    const [loader, setLoader] = useState(false);
-
-    useEffect(() => { getAllYears(); getIndicadores(); }, [data])
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 1000;
 
     // State to store indicadores
     const [indicadores, setIndicadores] = useState([]);
@@ -25,11 +19,26 @@ export const DataSearch = () => {
     // State to store the min and max years
     const [minMaxYears, setMinMaxYears] = useState([]);
 
+    const [options, setOptions] = useState([]);
+
+    // State to store the data from the API
+    const [data, setData] = useState([]);
+    const [loader, setLoader] = useState(false);
+
     // State to store the filters
     const [selectedCountries, setSelectedCountries] = useState([]);
     const [startYear, setStartYear] = useState("");
     const [endYear, setEndYear] = useState("");
     const [idIndicador, setIdIndicador] = useState("");
+
+
+    // API URL
+    const apiUrl = "https://invelecar-backend.onrender.com/data";
+
+
+    // useEffect to get all the years and indicadores when the data changes
+    useEffect(() => { getAllYears(); getIndicadores(); getAllPaises(); }, [data])
+
 
     // Fetch data from the API
     const fetchData = async () => {
@@ -60,7 +69,29 @@ export const DataSearch = () => {
         return isCountryMatch && isStartYearMatch && isEndYearMatch && isIdIndicadorMatch;
     });
 
-    filteredData.sort((a, b) => a.anno - b.anno);
+    // Group the data by pais and sort each group by anno
+    const groupedData = filteredData.reduce((acc, item) => {
+        if (!acc[item.pais]) {
+            acc[item.pais] = [];
+        }
+        acc[item.pais].push(item);
+        return acc;
+    }, {});
+
+    const sortedGroupedData = Object.values(groupedData).flatMap(group => {
+        return group.sort((a, b) => a.anno - b.anno);
+    });
+
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = sortedGroupedData.slice(indexOfFirstItem, indexOfLastItem);
+
+    const totalPages = Math.ceil(sortedGroupedData.length / itemsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
 
     // check if all filters are applied
     const areFiltersApplied = selectedCountries.length > 0 && startYear && endYear;
@@ -78,6 +109,8 @@ export const DataSearch = () => {
         const minYear = years[0];
         const maxYear = years[years.length - 1];
         setMinMaxYears([minYear, maxYear]);
+        setStartYear(minYear);
+        setEndYear(maxYear);
     };
 
     // Get all the indicadores from the data and set the indicadores state
@@ -92,8 +125,18 @@ export const DataSearch = () => {
         setIndicadores(indicadores);
     };
 
-    // Select options
-    const options = ['VENEZUELA', 'ARGENTINA'];
+    const getAllPaises = () => {
+        const paises = [];
+        data.forEach(item => {
+            if (!paises.includes(item.pais)) {
+                paises.push(item.pais);
+            }
+        });
+        paises.sort((a, b) => a - b);
+        setOptions(paises);
+        setSelectedCountries(paises);
+    };
+
 
     const handleSelectAll = (event) => {
         if (event.target.checked) {
@@ -134,7 +177,7 @@ export const DataSearch = () => {
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                         >
-                            Seleccionar paises
+                            Seleccionados: {selectedCountries.length === options.length ? "Todos" : selectedCountries.join(", ")}
                         </button>
                         <ul className="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
                             <li>
@@ -147,7 +190,7 @@ export const DataSearch = () => {
                                         onChange={handleSelectAll}
                                     />
                                     <label className="form-check-label" htmlFor="selectAll">
-                                        Select all
+                                        Seleccionar todos
                                     </label>
                                 </div>
                             </li>
@@ -197,23 +240,38 @@ export const DataSearch = () => {
             </div>
             {areFiltersApplied && (
                 <div className="container border border-2 px-3 mt-5 rounded-3">
+                    <nav className="mt-3">
+                        <ul className="pagination justify-content-center">
+                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Anterior</button>
+                            </li>
+                            {Array.from({ length: totalPages }, (_, index) => (
+                                <li key={index + 1} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                                    <button className="page-link" onClick={() => handlePageChange(index + 1)}>
+                                        {index + 1}
+                                    </button>
+                                </li>
+                            ))}
+                            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Siguiente</button>
+                            </li>
+                        </ul>
+                    </nav>
                     <table className="table table-striped">
                         <thead>
                             <tr>
-                                <th>Año</th>
                                 <th>País</th>
-                                <th>id indicador</th>
+                                <th>Año</th>
                                 <th>Descripción</th>
                                 <th>Unidad de medida</th>
                                 <th>Cantidad</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredData.map(item => (
+                            {currentItems.map(item => (
                                 <tr key={item.id}>
-                                    <td>{item.anno}</td>
                                     <td>{item.pais}</td>
-                                    <td>{item.id_indicador}</td>
+                                    <td>{item.anno}</td>
                                     <td>{item.descripcion_indicador}</td>
                                     <td>{item.unidad_medida}</td>
                                     <td>{item.cantidad}</td>
@@ -221,6 +279,23 @@ export const DataSearch = () => {
                             ))}
                         </tbody>
                     </table>
+                    <nav>
+                        <ul className="pagination justify-content-center">
+                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Anterior</button>
+                            </li>
+                            {Array.from({ length: totalPages }, (_, index) => (
+                                <li key={index + 1} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                                    <button className="page-link" onClick={() => handlePageChange(index + 1)}>
+                                        {index + 1}
+                                    </button>
+                                </li>
+                            ))}
+                            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Siguiente</button>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             )}
 

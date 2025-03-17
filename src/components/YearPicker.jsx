@@ -21,7 +21,7 @@ const YearPicker = ({ onRangeChange, id, minDate, maxDate }) => {
             dateFormat="yyyy"
             showYearPicker
             isClearable
-            placeholderText="Seleccione rango de años"
+            placeholderText={`${minDate.getFullYear()} - ${maxDate.getFullYear()}`}
             className="form-control"
             minDate={minDate}
             maxDate={maxDate}
