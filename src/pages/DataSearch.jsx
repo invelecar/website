@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader } from "../components/Loader";
+import YearPicker from "../components/YearPicker";
 
 export const DataSearch = () => {
 
@@ -8,6 +9,7 @@ export const DataSearch = () => {
         fetchData();
     }, []);
 
+
     // API URL
     const apiUrl = "https://invelecar-backend.onrender.com/data";
 
@@ -15,10 +17,19 @@ export const DataSearch = () => {
     const [data, setData] = useState([]);
     const [loader, setLoader] = useState(false);
 
+    useEffect(() => { getAllYears(); getIndicadores(); }, [data])
+
+    // State to store indicadores
+    const [indicadores, setIndicadores] = useState([]);
+
+    // State to store the min and max years
+    const [minMaxYears, setMinMaxYears] = useState([]);
+
     // State to store the filters
     const [selectedCountries, setSelectedCountries] = useState([]);
     const [startYear, setStartYear] = useState("");
     const [endYear, setEndYear] = useState("");
+    const [idIndicador, setIdIndicador] = useState("");
 
     // Fetch data from the API
     const fetchData = async () => {
@@ -33,6 +44,7 @@ export const DataSearch = () => {
             const responseJson = await response.json();
             setData(responseJson);
             setLoader(false);
+            getAllYears();
         } catch (error) {
             setLoader(false);
             console.log("error: ", error);
@@ -44,7 +56,8 @@ export const DataSearch = () => {
         const isCountryMatch = selectedCountries.length === 0 || selectedCountries.includes(item.pais);
         const isStartYearMatch = !startYear || item.anno >= parseInt(startYear);
         const isEndYearMatch = !endYear || item.anno <= parseInt(endYear);
-        return isCountryMatch && isStartYearMatch && isEndYearMatch;
+        const isIdIndicadorMatch = !idIndicador || item.id_indicador === parseInt(idIndicador);
+        return isCountryMatch && isStartYearMatch && isEndYearMatch && isIdIndicadorMatch;
     });
 
     filteredData.sort((a, b) => a.anno - b.anno);
@@ -52,6 +65,32 @@ export const DataSearch = () => {
     // check if all filters are applied
     const areFiltersApplied = selectedCountries.length > 0 && startYear && endYear;
 
+    // Get all the years from the data and set the min and max years
+    const getAllYears = () => {
+        const years = [];
+        data.forEach(item => {
+            if (!years.includes(item.anno)) {
+                years.push(item.anno);
+            }
+        });
+        years.sort((a, b) => a - b);
+
+        const minYear = years[0];
+        const maxYear = years[years.length - 1];
+        setMinMaxYears([minYear, maxYear]);
+    };
+
+    // Get all the indicadores from the data and set the indicadores state
+    const getIndicadores = () => {
+        const indicadores = [];
+        data.forEach(item => {
+            if (!indicadores.includes(item.id_indicador)) {
+                indicadores.push(item.id_indicador);
+            }
+        });
+        indicadores.sort((a, b) => a - b);
+        setIndicadores(indicadores);
+    };
 
     // Select options
     const options = ['VENEZUELA', 'ARGENTINA'];
@@ -70,6 +109,12 @@ export const DataSearch = () => {
         } else {
             setSelectedCountries(selectedCountries.filter((item) => item !== option));
         }
+    };
+
+    const handleDateRangeChange = (range) => {
+        setStartYear(range[0] ? range[0].getFullYear() : "");
+        setEndYear(range[1] ? range[1].getFullYear() : "");
+        console.log(range);
     };
 
     return (
@@ -125,17 +170,29 @@ export const DataSearch = () => {
                         </ul>
                     </div>
                 </div>
-                <div className="col-md-4">
-                    <label htmlFor="startYear" className="form-label">
-                        <strong>Año inicio</strong>
+                <div className="col-md-4 d-flex flex-column">
+                    <label className="form-label" htmlFor="year-picker">
+                        <strong className="mb-2">Años</strong>
                     </label>
-                    <input type="number" className="form-control" id="startYear" value={startYear} onChange={(e) => setStartYear(e.target.value)} />
+                    <YearPicker
+                        id="year-picker"
+                        minDate={new Date(minMaxYears[0], 0, 1)}
+                        maxDate={new Date(minMaxYears[1], 0, 1)}
+                        onRangeChange={handleDateRangeChange}
+                    />
                 </div>
                 <div className="col-md-4">
-                    <label htmlFor="endYear" className="form-label">
-                        <strong>Año fin</strong>
+                    <label className="form-label">
+                        <strong className="mb-2">Id indicador</strong>
                     </label>
-                    <input type="number" className="form-control" id="endYear" value={endYear} onChange={(e) => setEndYear(e.target.value)} />
+                    <select className="form-select" onChange={(e) => setIdIndicador(e.target.value)}>
+                        <option value="">Seleccionar indicador</option>
+                        {indicadores.map((indicador) => (
+                            <option key={indicador} value={indicador}>
+                                {indicador}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
             {areFiltersApplied && (
@@ -145,6 +202,7 @@ export const DataSearch = () => {
                             <tr>
                                 <th>Año</th>
                                 <th>País</th>
+                                <th>id indicador</th>
                                 <th>Descripción</th>
                                 <th>Unidad de medida</th>
                                 <th>Cantidad</th>
@@ -155,6 +213,7 @@ export const DataSearch = () => {
                                 <tr key={item.id}>
                                     <td>{item.anno}</td>
                                     <td>{item.pais}</td>
+                                    <td>{item.id_indicador}</td>
                                     <td>{item.descripcion_indicador}</td>
                                     <td>{item.unidad_medida}</td>
                                     <td>{item.cantidad}</td>
