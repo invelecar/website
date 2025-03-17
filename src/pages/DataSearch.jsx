@@ -60,6 +60,20 @@ export const DataSearch = () => {
         }
     }
 
+    // Function to format a number with two decimal places
+    function formatNumber(numberString) {
+        const number = parseFloat(numberString);
+
+        if (isNaN(number)) {
+            return numberString; // Return the original string if it's not a valid number
+        }
+
+        return number.toLocaleString('es-VE', { // 'es-VE' for Venezuelan Spanish locale
+            minimumFractionDigits: 2, // Ensure at least two decimal places
+            maximumFractionDigits: 2, // Ensure at most two decimal places
+        });
+    }
+
     // Filter the data based on the selected filters
     const filteredData = data.filter(item => {
         const isCountryMatch = selectedCountries.length === 0 || selectedCountries.includes(item.pais);
@@ -274,7 +288,7 @@ export const DataSearch = () => {
                                     <td>{item.anno}</td>
                                     <td>{item.descripcion_indicador}</td>
                                     <td>{item.unidad_medida}</td>
-                                    <td>{item.cantidad}</td>
+                                    <td>{formatNumber(item.cantidad)}</td>
                                 </tr>
                             ))}
                         </tbody>
