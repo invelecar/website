@@ -13,6 +13,9 @@ export const DataSearch = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 1000;
 
+    // State to store the selected indicadores
+    const [selectedIndicadoresList, setSelectedIndicadoresList] = useState([]);
+
     // State to store indicadores
     const [indicadores, setIndicadores] = useState([]);
 
@@ -39,6 +42,23 @@ export const DataSearch = () => {
     // useEffect to get all the years and indicadores when the data changes
     useEffect(() => { getAllYears(); getIndicadores(); getAllPaises(); }, [data])
 
+    // Handle the select all checkbox for the indicadores
+    const handleSelectAllIndicadores = (event) => {
+        if (event.target.checked) {
+            setSelectedIndicadoresList(indicadores.map((indicador) => indicador.id));
+        } else {
+            setSelectedIndicadoresList([]);
+        }
+    };
+
+    // Handle the change event for the indicadores
+    const handleIndicadorChange = (id) => (event) => {
+        if (event.target.checked) {
+            setSelectedIndicadoresList([...selectedIndicadoresList, id]);
+        } else {
+            setSelectedIndicadoresList(selectedIndicadoresList.filter((item) => item !== id));
+        }
+    };
 
     // Fetch data from the API
     const fetchData = async () => {
@@ -79,7 +99,7 @@ export const DataSearch = () => {
         const isCountryMatch = selectedCountries.length === 0 || selectedCountries.includes(item.pais);
         const isStartYearMatch = !startYear || item.anno >= parseInt(startYear);
         const isEndYearMatch = !endYear || item.anno <= parseInt(endYear);
-        const isIdIndicadorMatch = !idIndicador || item.id_indicador === parseInt(idIndicador);
+        const isIdIndicadorMatch = selectedIndicadoresList.length === 0 || selectedIndicadoresList.includes(item.id_indicador);
         return isCountryMatch && isStartYearMatch && isEndYearMatch && isIdIndicadorMatch;
     });
 
@@ -242,17 +262,54 @@ export const DataSearch = () => {
                     />
                 </div>
                 <div className="col-md-4">
-                    <label className="form-label">
-                        <strong className="mb-2">indicador</strong>
+                    <label htmlFor="dropdown-menu-indicadores" className="form-label">
+                        <strong>Indicadores</strong>
                     </label>
-                    <select className="form-select" onChange={(e) => setIdIndicador(e.target.value)}>
-                        <option value="">Seleccionar indicador</option>
-                        {indicadores.map((indicador, index) => (
-                            <option key={index} value={indicador.id}>
-                                {indicador.descripcion}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="dropdown" id="dropdown-menu-indicadores">
+                        <button
+                            className="btn text-start btn-primary w-100 dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+                            Seleccionados: {selectedIndicadoresList.length}
+                        </button>
+                        <ul className="dropdown-menu w-100">
+                            <li>
+                                <div className="form-check dropdown-item ps-5">
+                                    <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        id="selectAllIndicadores"
+                                        checked={selectedIndicadoresList.length === indicadores.length}
+                                        onChange={handleSelectAllIndicadores}
+                                    />
+                                    <label className="form-check-label" htmlFor="selectAllIndicadores">
+                                        Seleccionar todos
+                                    </label>
+                                </div>
+                            </li>
+                            {indicadores.map((indicador) => (
+                                <li key={indicador.id}>
+                                    <div className="form-check dropdown-item ps-5">
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            id={`indicador-${indicador.id}`}
+                                            checked={selectedIndicadoresList.includes(indicador.id)}
+                                            onChange={handleIndicadorChange(indicador.id)}
+                                        />
+                                        <label
+                                            className="form-check-label"
+                                            htmlFor={`indicador-${indicador.id}`}
+                                        >
+                                            {indicador.descripcion}
+                                        </label>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </div>
             {areFiltersApplied && (
