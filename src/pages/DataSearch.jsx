@@ -11,13 +11,16 @@ export const DataSearch = () => {
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 1000;
+    const itemsPerPage = 20;
 
     // State to store the selected indicadores
     const [selectedIndicadoresList, setSelectedIndicadoresList] = useState([]);
 
     // State to store indicadores
     const [indicadores, setIndicadores] = useState([]);
+
+    console.log(indicadores);
+    console.log(selectedIndicadoresList);
 
     // State to store the min and max years
     const [minMaxYears, setMinMaxYears] = useState([]);
@@ -33,7 +36,6 @@ export const DataSearch = () => {
     const [startYear, setStartYear] = useState("");
     const [endYear, setEndYear] = useState("");
     const [idIndicador, setIdIndicador] = useState("");
-
 
     // API URL
     const apiUrl = "https://invelecar-backend.onrender.com/data";
@@ -128,7 +130,7 @@ export const DataSearch = () => {
     };
 
     // check if all filters are applied
-    const areFiltersApplied = selectedCountries.length > 0 && startYear && endYear;
+    const areFiltersApplied = selectedCountries.length > 0 || startYear || endYear;
 
     // Get all the years from the data and set the min and max years
     const getAllYears = () => {
@@ -173,7 +175,6 @@ export const DataSearch = () => {
         setSelectedCountries(paises);
     };
 
-
     const handleSelectAll = (event) => {
         if (event.target.checked) {
             setSelectedCountries(options);
@@ -195,7 +196,71 @@ export const DataSearch = () => {
         setEndYear(range[1] ? range[1].getFullYear() : "");
         console.log(range);
     };
-    console.log(indicadores)
+
+    // Build a sorted list of all 'anno' values in your *entire* filtered data
+    const yearsInSecondTable = [...new Set(sortedGroupedData.map(item => item.anno))].sort((a, b) => a - b);
+
+    // Group data by pais + id_indicador from the *entire* sortedGroupedData
+    const groupedDataSecondTable = sortedGroupedData.reduce((acc, item) => {
+        const key = `${item.pais}-${item.id_indicador}`;
+        if (!acc[key]) {
+            acc[key] = {
+                pais: item.pais,
+                descripcion_indicador: item.descripcion_indicador,
+                unidad_medida: item.unidad_medida,
+                data: {}
+            };
+        }
+        acc[key].data[item.anno] = item.cantidad;
+        return acc;
+    }, {});
+
+    const secondTableRows = Object.values(groupedDataSecondTable);
+
+    const renderPaginationButtons = () => {
+        const maxButtons = 10;
+        const buttons = [];
+
+        if (totalPages <= maxButtons * 2) {
+            for (let i = 1; i <= totalPages; i++) {
+                buttons.push(
+                    <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+                        <button className="page-link" onClick={() => handlePageChange(i)}>
+                            {i}
+                        </button>
+                    </li>
+                );
+            }
+        } else {
+            for (let i = 1; i <= maxButtons; i++) {
+                buttons.push(
+                    <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+                        <button className="page-link" onClick={() => handlePageChange(i)}>
+                            {i}
+                        </button>
+                    </li>
+                );
+            }
+
+            buttons.push(
+                <li key="ellipsis1" className="page-item disabled">
+                    <span className="page-link">...</span>
+                </li>
+            );
+
+            for (let i = totalPages - maxButtons + 1; i <= totalPages; i++) {
+                buttons.push(
+                    <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+                        <button className="page-link" onClick={() => handlePageChange(i)}>
+                            {i}
+                        </button>
+                    </li>
+                );
+            }
+        }
+
+        return buttons;
+    };
 
     return (
         <div className="vh-100 align-items-center">
@@ -312,20 +377,15 @@ export const DataSearch = () => {
                     </div>
                 </div>
             </div>
+            <h2 className="text-center mt-5">Opción 1</h2>
             {areFiltersApplied && (
                 <div className="container border border-2 px-3 mt-5 rounded-3">
-                    <nav className="mt-3">
-                        <ul className="pagination justify-content-center">
+                    <nav>
+                        <ul className="pagination justify-content-center mt-3">
                             <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                                 <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Anterior</button>
                             </li>
-                            {Array.from({ length: totalPages }, (_, index) => (
-                                <li key={index + 1} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                                    <button className="page-link z-n1" onClick={() => handlePageChange(index + 1)}>
-                                        {index + 1}
-                                    </button>
-                                </li>
-                            ))}
+                            {renderPaginationButtons()}
                             <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
                                 <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Siguiente</button>
                             </li>
@@ -358,20 +418,44 @@ export const DataSearch = () => {
                             <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                                 <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Anterior</button>
                             </li>
-                            {Array.from({ length: totalPages }, (_, index) => (
-                                <li key={index + 1} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                                    <button className="page-link" onClick={() => handlePageChange(index + 1)}>
-                                        {index + 1}
-                                    </button>
-                                </li>
-                            ))}
+                            {renderPaginationButtons()}
                             <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
                                 <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Siguiente</button>
                             </li>
                         </ul>
                     </nav>
                 </div>
+
             )}
+            <h2 className="text-center mt-5">Opción 2</h2>
+            <div className="container border border-2 px-3 mt-5 rounded-3">
+                <div style={{ overflowX: "auto" }}>
+                    <table className="table table-striped second-table">
+                        <thead>
+                            <tr>
+                                <th>País</th>
+                                <th className="no-wrap">Descripción</th>
+                                <th className="no-wrap">Unidad de medida</th>
+                                {yearsInSecondTable.map(year => (
+                                    <th key={year}>{year}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {secondTableRows.map((row, index) => (
+                                <tr key={index}>
+                                    <td>{row.pais}</td>
+                                    <td className="no-wrap">{row.descripcion_indicador}</td>
+                                    <td>{row.unidad_medida}</td>
+                                    {yearsInSecondTable.map(year => (
+                                        <td key={year}>{row.data[year] ? formatNumber(row.data[year]) : ''}</td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 }
