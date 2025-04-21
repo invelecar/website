@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Loader } from "../components/Loader";
 import YearPicker from "../components/YearPicker";
+import { Link } from "react-router-dom";
 
 export const DataSearch = () => {
 
@@ -265,7 +266,14 @@ export const DataSearch = () => {
     return (
         <div className="vh-100 align-items-center">
             <Loader visible={loader} />
-            <h1 className="text-center mt-4">Buscar datos</h1>
+            <div className="row">
+                <div className="col-md-8 text-end d-flex justify-content-end align-content-end">
+                    <h1 className="text-center mt-5">Buscador de datos</h1>
+                </div>
+                <div className="col-md-4 text-center">
+                    <Link to="/login" className="btn btn-primary mt-5">Iniciar sesión</Link>
+                </div>
+            </div>
             <div className="row px-5">
                 <div className="col-md-4">
                     <label htmlFor="dropdown-menu" className="form-label">
