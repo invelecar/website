@@ -12,6 +12,8 @@ import { Demo } from "./pages/Demo";
 import { DataSearch } from "./pages/DataSearch";
 import { Login } from "./pages/login";
 import { Dashboard } from "./pages/Dashboard";
+import { Nosotros } from "./pages/Nosotros";
+import { Informes } from "./pages/Informes";
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
@@ -25,7 +27,10 @@ export const router = createBrowserRouter(
       <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
 
         {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
-        <Route path= "/" element={<DataSearch />} />
+        <Route path= "/" element={<Home />} />
+        <Route path= "/cifras-del-sector" element={<DataSearch />} />
+        <Route path= "/nosotros" element={<Nosotros />} />
+        <Route path= "/informes" element={<Informes />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Route>

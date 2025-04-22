@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader } from "../components/Loader";
 import YearPicker from "../components/YearPicker";
 import { Link } from "react-router-dom";
+import { Navbar } from "../components/Navbar";
 
 export const DataSearch = () => {
 
@@ -265,13 +266,11 @@ export const DataSearch = () => {
 
     return (
         <div className="vh-100 align-items-center">
+            <Navbar />
             <Loader visible={loader} />
             <div className="row">
-                <div className="col-md-8 text-end d-flex justify-content-end align-content-end">
-                    <h1 className="text-center mt-5">Buscador de datos</h1>
-                </div>
-                <div className="col-md-4 text-center">
-                    <Link to="/login" className="btn btn-primary mt-5">Iniciar sesión</Link>
+                <div className="col-md-12  d-flex justify-content-center align-items-center flex-column">
+                    <h1 className="text-center mt-5">Cifras del sector</h1>
                 </div>
             </div>
             <div className="row px-5">
@@ -385,7 +384,7 @@ export const DataSearch = () => {
                     </div>
                 </div>
             </div>
-            <h2 className="text-center mt-5">Opción 1</h2>
+            <h2 className="text-center mt-5">Resultados anuales ordenados por año</h2>
             {areFiltersApplied && (
                 <div className="container border border-2 px-3 mt-5 rounded-3">
                     <nav>
@@ -435,7 +434,7 @@ export const DataSearch = () => {
                 </div>
 
             )}
-            <h2 className="text-center mt-5">Opción 2</h2>
+            <h2 className="text-center mt-5">Resultados anuales ordenados según el indicador</h2>
             <div className="container border border-2 px-3 mt-5 rounded-3">
                 <div style={{ overflowX: "auto" }}>
                     <table className="table table-striped second-table">
