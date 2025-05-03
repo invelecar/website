@@ -1,15 +1,55 @@
 import { Navbar } from "../components/Navbar.jsx";
+import { useState, useEffect } from 'react';
+import { Loader } from "../components/Loader.jsx";
 
 
 export const Informes = () => {
+
+    const [loader, setLoader] = useState(false);
+    const [fileList, setFileList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchDriveFiles = async () => {
+            setLoader(true);
+            try {
+                const response = await fetch('https://invelecar-backend.onrender.com/api/get-drive-files');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setFileList(data);
+                setLoader(false);
+            } catch (e) {
+                setLoader(false);
+                setError(e.message);
+                setLoading(false);
+            }
+        };
+
+        fetchDriveFiles();
+    }, []);
+
     return (
         <div>
+            <Loader visible={loader} />
             <Navbar />
-            <div className="container vh-100 d-flex flex-column justify-content-center">
-                <h1 className="text-center">Informes</h1>
-                <p className="text-center">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
+            <div className="d-flex flex-column justify-content-center align-items-center">
+                <h2 className="mt-3">Reportes semanales</h2>
+                {fileList.length > 0 ? (
+                    <div className="file-grid">
+                        {fileList.map(file => (
+                            <div key={file.id} className="file-item">
+                                <a href={file.webViewLink} target="_blank" rel="noopener noreferrer">
+                                    <p className="file-name">{file.name}</p>
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p>No files found in the specified Google Drive folder.</p>
+                )}
             </div>
         </div>
     );

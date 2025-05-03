@@ -7,13 +7,14 @@ import {
 } from "react-router-dom";
 import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
-import { Single } from "./pages/Single";
-import { Demo } from "./pages/Demo";
 import { DataSearch } from "./pages/DataSearch";
 import { Login } from "./pages/login";
 import { Dashboard } from "./pages/Dashboard";
+import { DataSearchByYear } from "./pages/DataSearchByYear";
 import { Nosotros } from "./pages/Nosotros";
 import { Informes } from "./pages/Informes";
+import { Signup } from "./pages/Signup";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
@@ -29,9 +30,11 @@ export const router = createBrowserRouter(
         {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
         <Route path= "/" element={<Home />} />
         <Route path= "/cifras-del-sector" element={<DataSearch />} />
+        <Route path= "/cifras-del-sector-por-fecha" element={<DataSearchByYear />} />
         <Route path= "/nosotros" element={<Nosotros />} />
         <Route path= "/informes" element={<Informes />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Route>
     )

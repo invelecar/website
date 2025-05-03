@@ -4,7 +4,7 @@ import YearPicker from "../components/YearPicker";
 import { Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 
-export const DataSearch = () => {
+export const DataSearchByYear = () => {
 
     // Fetch data from the API when the component mounts
     useEffect(() => {
@@ -384,35 +384,55 @@ export const DataSearch = () => {
                     </div>
                 </div>
             </div>
-            <h2 className="text-center mt-5">Resultados anuales ordenados según el indicador</h2>
-            <div className="container border border-2 px-3 mt-5 rounded-3">
-                <div style={{ overflowX: "auto" }}>
-                    <table className="table table-striped second-table">
+            <h2 className="text-center mt-5">Resultados anuales ordenados por año</h2>
+            {areFiltersApplied && (
+                <div className="container border border-2 px-3 mt-5 rounded-3">
+                    <nav>
+                        <ul className="pagination justify-content-center mt-3">
+                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Anterior</button>
+                            </li>
+                            {renderPaginationButtons()}
+                            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Siguiente</button>
+                            </li>
+                        </ul>
+                    </nav>
+                    <table className="table table-striped">
                         <thead>
                             <tr>
                                 <th>País</th>
-                                <th className="no-wrap">Descripción</th>
-                                <th className="no-wrap">Unidad de medida</th>
-                                {yearsInSecondTable.map(year => (
-                                    <th key={year}>{year}</th>
-                                ))}
+                                <th>Año</th>
+                                <th>Descripción</th>
+                                <th>Unidad de medida</th>
+                                <th>Cantidad</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {secondTableRows.map((row, index) => (
-                                <tr key={index}>
-                                    <td>{row.pais}</td>
-                                    <td className="no-wrap">{row.descripcion_indicador}</td>
-                                    <td>{row.unidad_medida}</td>
-                                    {yearsInSecondTable.map(year => (
-                                        <td key={year}>{row.data[year] ? formatNumber(row.data[year]) : ''}</td>
-                                    ))}
+                            {currentItems.map(item => (
+                                <tr key={item.id}>
+                                    <td>{item.pais}</td>
+                                    <td>{item.anno}</td>
+                                    <td>{item.descripcion_indicador}</td>
+                                    <td>{item.unidad_medida}</td>
+                                    <td>{formatNumber(item.cantidad)}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                    <nav>
+                        <ul className="pagination justify-content-center">
+                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Anterior</button>
+                            </li>
+                            {renderPaginationButtons()}
+                            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Siguiente</button>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

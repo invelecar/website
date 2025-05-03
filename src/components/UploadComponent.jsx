@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { gapi } from 'gapi-script';
 import { Link } from 'react-router-dom';
+import { Loader } from './Loader.jsx';
 
 export const UploadComponent = () => {
 
@@ -22,6 +23,7 @@ export const UploadComponent = () => {
 
     const [file, setFile] = useState(null);
     const [accessToken, setAccessToken] = useState(null);
+    const [loader, setLoader] = useState(false);
 
     const googleLogin = useGoogleLogin({
         onSuccess: (tokenResponse) => setAccessToken(tokenResponse.access_token),
@@ -65,6 +67,7 @@ export const UploadComponent = () => {
         const requestBody = new Blob(multipartBody, { type: `multipart/related; boundary=${boundary}` });
 
         try {
+            setLoader(true);
             const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
                 method: 'POST',
                 headers: {
@@ -75,13 +78,17 @@ export const UploadComponent = () => {
             });
 
             if (!response.ok) {
+                setLoader
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
-            console.log('File uploaded successfully:', result);
-            alert('File uploaded successfully! File ID: ' + result.id);
+            console.log('Archivo subido satisfactoriamente:', result);
+            alert('Archivo subido satisfactoriamente:' + result.id);
+            setLoader(false);
+            setFile(null); // Clear the file input after upload
         } catch (error) {
+            setLoader(false);
             console.error('Error uploading file:', error);
             alert('Error uploading file.');
         }
@@ -89,6 +96,7 @@ export const UploadComponent = () => {
 
     return (
         <div className=' d-flex flex-column justify-content-center align-items-center'>
+            <Loader visible={loader} />
             <button style={{ display: `${accessToken != null ? "none" : ""}` }} className='btn btn-primary' onClick={googleLogin}>Iniciar en Google</button>
             {accessToken && (
                 <div className='d-flex justify-content-center align-items-center mt-3'>
